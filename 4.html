@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Spiritual Activities</title>
+  <style>
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+
+    .left-section {
+      float: left;
+      width: 50%;
+    }
+
+    .right-section {
+      float: right;
+      width: 50%;
+    }
+
+    .left-section table,
+    .right-section table {
+      width: 100%;
+    }
+
+    #currentMonth {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+	h2 {
+      text-align: center; /* Center the title */
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Daily Spiritual Activities</h2>
+
+  <div id="currentMonth"></div>
+
+  <div class="left-section">
+    <table>
+      <thead>
+        <tr>
+          <th>Day</th>
+        <th>구약</th>
+        <th>신약</th>
+        <th>잠언</th>
+        <th>시편</th>
+        <th>암송</th>
+        <th>전도</th> 
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Content for the first 15 days will be dynamically generated here -->
+      </tbody>
+    </table>
+  </div>
+
+  <div class="right-section">
+    <table>
+      <thead>
+        <tr>
+          <th>Day</th>
+        <th>구약</th>
+        <th>신약</th>
+        <th>잠언</th>
+        <th>시편</th>
+        <th>암송</th>
+        <th>전도</th> 
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Content for the remaining days will be dynamically generated here -->
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var currentMonthElement = document.getElementById('currentMonth');
+      var currentDate = new Date();
+      var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      var currentMonth = monthNames[currentDate.getMonth()];
+
+      currentMonthElement.textContent = currentMonth;
+
+      var leftTableBody = document.querySelector('.left-section tbody');
+      var rightTableBody = document.querySelector('.right-section tbody');
+
+      for (var day = 1; day <= 30; day++) {
+        var row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${day}</td>
+          <td></td>
+          <td></td>
+          <td></td>
+		  <td></td>
+		  <td></td>
+		  <td></td>
+        `;
+
+        // Decide whether to append to leftTableBody or rightTableBody based on the day
+        if (day <= 15) {
+          leftTableBody.appendChild(row.cloneNode(true));
+        } else {
+          rightTableBody.appendChild(row.cloneNode(true));
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>
