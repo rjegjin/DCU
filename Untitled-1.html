@@ -254,6 +254,13 @@
     document.addEventListener('DOMContentLoaded', function () {
       loadNamesFromLocalStorage();
       makeBroTable();
+
+        // Add event listeners for touch events
+
+      document.getElementById('memorizeBtn').addEventListener('touchstart', memorizeNames);
+      document.getElementById('generateBtn').addEventListener('touchstart', generateSchedule);
+      document.getElementById('randomAssignBtn').addEventListener('touchstart', randomAssign);
+      document.getElementById('addBroBtn').addEventListener('touchstart', addBro);
     });
 
     function addBro() {
@@ -273,10 +280,11 @@
     <tr id="broTR">
     </tr>
   </table>
-  <button ontouchstart="memorizeNames()" style="font-size: 16px;">Memorize People's Names</button>
-  <button ontouchstart="generateSchedule()" style="font-size: 16px;">Generate Schedule</button>
-  <button ontouchstart="randomAssign()" style="font-size: 16px;">Randomly Assign</button>
-  <button ontouchstart="addBro()" style="font-size: 16px;">Add Bro</button>
+  <button id="memorizeBtn" style="font-size: 16px;">Memorize People's Names</button>
+  <button id="generateBtn" style="font-size: 16px;">Generate Schedule</button>
+  <button id="randomAssignBtn" style="font-size: 16px;">Randomly Assign</button>
+  <button id="addBroBtn" style="font-size: 16px;">Add Bro</button>
+  
   <table id="schedule-table">
   </table>
   <h2 style="font-size: 24px;">Brother's Cooking Turns</h2> <!-- Adjust heading font size for mobile -->
