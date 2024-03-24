@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Cooking Schedule</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Add viewport meta tag -->
+  <style>
+    table {
+      border-collapse: collapse;
+      border: 1px solid black;
+      width: 100%; /* Adjust width for better responsiveness */
+      margin: 20px auto;
+      font-size: 16px; /* Adjust font size for mobile */
+    }
+
+    th,
+    td {
+      border: 1px solid black;
+      padding: 8px; /* Adjust padding for better spacing on mobile */
+      text-align: center;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    .icon {
+      width: 50px;
+      height: 10px;
+      background-color: #333;
+      border-radius: 5px;
+    }
+  </style>
+  <script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.js"></script>
+  <script>
+    let numPeople = 0;
+    let peopleNames = JSON.parse(localStorage.getItem('peopleNames')) ?? ['이승학', '안희범', '정명현', '이준우', '정재원'];
+
+    function makeBroTable() {
+      $('#broTR').html('');
+      peopleNames.forEach(ele => {
+        $('#broTR').append(`<td>${ele} <button onclick="deleteBro(this)">삭제</button></td>`);
+      })
+    }
+
+    function deleteBro(ele) {
+      const thisBro = $(ele).parent().text();
+      peopleNames = peopleNames.filter(ele => thisBro.indexOf(ele) == -1);
+      saveNamesToLocalStorage();
+      makeBroTable();
+    }
+
+    function saveNamesToLocalStorage() {
+      localStorage.setItem('peopleNames', JSON.stringify(peopleNames));
+    }
+
+    function loadNamesFromLocalStorage() {
+      const storedNames = localStorage.getItem('peopleNames');
+      if (storedNames) {
+        // peopleNames = JSON.parse(storedNames);
+      }
+    }
+
+    function memorizeNames() {
+      numPeople = parseInt(prompt('Enter the number of people:', 4));
+      peopleNames = [];
+
+      for (let i = 0; i < numPeople; i++) {
+        const name = prompt(`Enter name for person ${i + 1}:`);
+        peopleNames.push(name);
+      }
+
+      saveNamesToLocalStorage(); // Save names to Local Storage
+    }
+
+    function generateSchedule() {
+      const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']; // Starting day is Monday
+      const meals = ['Breakfast', 'Dinner'];
+
+      const scheduleTable = document.getElementById('schedule-table');
+      scheduleTable.innerHTML = '';
+
+      const rowHeaders = ['Day', ...weekdays];
+      const columnHeaders = ['Meal', ...meals];
+      const numRows = 3; // Update to 3 rows
+      const numCols = 8;
+
+      // Create table header
+      const thead = document.createElement('thead');
+      const headerRow = document.createElement('tr');
+      for (const header of rowHeaders) {
+        const th = document.createElement('th');
+        th.textContent = header;
+        headerRow.appendChild(th);
+      }
+      thead.appendChild(headerRow);
+      scheduleTable.appendChild(thead);
+
+      // Create table body
+      const tbody = document.createElement('tbody');
+      for (let i = 0; i < numRows; i++) {
+        if (i === 2) // Skip the 4th row (index 2)
+          continue;
+
+        const row = document.createElement('tr');
+        const meal = meals[i];
+        const dayStart = (i === 0) ? 0 : 3; // Skip Wednesday dinners (index 3)
+        const dayEnd = (i === numRows - 1) ? 6 : 5; // Skip Sunday dinners (index 6)
+
+        for (let j = 0; j < numCols; j++) {
+          const cell = document.createElement('td');
+          if (j === 0) {
+            cell.textContent = meal;
+          } else {
+            const dayIndex = (j + dayStart) % 7;
+            const select = document.createElement('select');
+            select.id = `${i}-${j}`; // Set a unique ID for each select element
+            const option = document.createElement('option');
+            option.value = '-';
+            option.textContent = '-';
+            select.appendChild(option);
+            for (const name of peopleNames) {
+              const option = document.createElement('option');
+              option.value = name;
+              option.textContent = name;
+              select.appendChild(option);
+            }
+            select.addEventListener('change', updatePersonTurns);
+            cell.appendChild(select);
+
+            // Block Sunday dinner combo box
+            if (i === numRows - 1 && dayIndex === 6) {
+              select.disabled = true;
+              select.value = '-'; // Always show "-"
+            }
+          }
+          row.appendChild(cell);
+        }
+        tbody.appendChild(row);
+      }
+      scheduleTable.appendChild(tbody);
+      updatePersonTurns(); // Call the function to update the person's cooking turns table
+    }
+
+    /*
+      안희범 - blue
+      이준우 - green
+      정명현 - purple
+      정재원 - yellow
+    */
+    function highlightTd() {
+      const colorObj = {
+        안희범: 'blue',
+        이준우: 'green',
+        정명현: 'purple',
+        정재원: 'yellow',
+        김승우: 'orange',
+        '-':'white'
+      }
+      $('#schedule-table td').each((idx, ele) => {
+        const thisText = $(ele).text();
+        if (thisText == 'Breakfast' || thisText == 'Dinner') return;
+        const thisValue = $(ele).find('select').val();
+        const thisColor = colorObj[thisValue];
+        $(ele).css('backgroundColor', thisColor);
+      })
+    }
+
+    function updatePersonTurns() {
+      highlightTd();
+      const personTurnsTable = document.getElementById('person-turns-table');
+      personTurnsTable.innerHTML = '';
+
+      const personTurns = {}; // Initialize an empty object to count the number of turns for each person
+
+      for (const name of peopleNames) {
+        personTurns[name] = 0; // Initialize each person's turn count to zero
+      }
+
+      // Iterate through the schedule table and count each person's turn
+      for (let i = 0; i < 3; i++) {
+        if (i === 2) // Skip the 4th row (index 2)
+          continue;
+
+        for (let j = 1; j < 8; j++) {
+          const selectElement = document.getElementById(`${i}-${j}`);
+          const selectedPerson = selectElement.value;
+          if (selectedPerson !== '-' && selectedPerson !== '') {
+            personTurns[selectedPerson]++;
+          }
+        }
+      }
+
+      // Create the person's turn table
+      const thead = document.createElement('thead');
+      const headerRow = document.createElement('tr');
+      const th = document.createElement('th');
+      th.textContent = 'Name';
+      headerRow.appendChild(th);
+      const th2 = document.createElement('th');
+      th2.textContent = 'Number of Cooking Turns';
+      headerRow.appendChild(th2);
+      thead.appendChild(headerRow);
+      personTurnsTable.appendChild(thead);
+
+      const tbody = document.createElement('tbody');
+      for (const name of peopleNames) {
+        const row = document.createElement('tr');
+        const cellName = document.createElement('td');
+        cellName.textContent = name;
+        row.appendChild(cellName);
+        const cellTurns = document.createElement('td');
+        cellTurns.textContent = personTurns[name];
+        row.appendChild(cellTurns);
+        tbody.appendChild(row);
+      }
+      personTurnsTable.appendChild(tbody);
+    }
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    function randomAssign() {
+      const allSelects = document.getElementsByTagName('select');
+      let availableNames = peopleNames.filter(name => name !== '-' && name !== ''); // Filter out blank and "-" names
+    
+      // Calculate the number of turns to be assigned
+      const totalTurns = 14;
+    
+      // Assign the selected names to the combo boxes
+      for (let i = 0; i < allSelects.length; i++) {
+        // Shuffle the available names array to ensure random assignment for each selection
+        shuffleArray(availableNames);
+    
+        const select = allSelects[i];
+        select.value = availableNames[0]; // Select the first name from the shuffled list
+        availableNames = availableNames.slice(1); // Remove the selected name from the available list
+    
+        // If the available names are exhausted, reset the list for the next round of shuffling
+        if (availableNames.length === 0) {
+          availableNames = peopleNames.filter(name => name !== '-' && name !== '');
+        }
+      }
+    
+      updatePersonTurns(); // Update the person's cooking turns after random assignment
+    }
+    
+
+    // Load names from Local Storage when the page loads
+    document.addEventListener('DOMContentLoaded', function () {
+      loadNamesFromLocalStorage();
+      makeBroTable();
+    });
+
+    function addBro() {
+      const thisBro = prompt(`Enter name for person :`);
+      peopleNames.push(thisBro);
+      saveNamesToLocalStorage();
+      makeBroTable();
+    }
+
+
+  </script>
+</head>
+
+<body>
+  <h1 style="font-size: 32px;">Cooking Schedule</h1> <!-- Adjust title font size for mobile -->
+  <table id="broTable">
+    <tr id="broTR">
+    </tr>
+  </table>
+  <button ontouchstart="memorizeNames()" onclick="memorizeNames()" style="font-size: 16px;">Memorize People's Names</button>
+<button ontouchstart="generateSchedule()" onclick="generateSchedule()" style="font-size: 16px;">Generate Schedule</button>
+<button ontouchstart="randomAssign()" onclick="randomAssign()" style="font-size: 16px;">Randomly Assign</button>
+<button ontouchstart="addBro()" onclick="addBro()" style="font-size: 16px;">Add Bro</button>
+
+  <table id="schedule-table">
+  </table>
+  <h2 style="font-size: 24px;">Brother's Cooking Turns</h2> <!-- Adjust heading font size for mobile -->
+  <table id="person-turns-table">
+  </table>
+</body>
+
+</html>
